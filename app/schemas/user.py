@@ -1,19 +1,19 @@
-# Los schemas se usan para validar la data recibida, serializarla y deselearizarla.
-
+# app/schemas/user.py
 from marshmallow import Schema, fields
 
 class UserSchema(Schema):
-    id = fields.Int(dump_only = True)
-    username = fields.Str(required = True)
-    email = fields.Email(required = True)
-    password = fields.Str(load_only = True, required = True)
+    id = fields.Int(dump_only=True)
+    first_name = fields.Str(required=True)
+    last_name = fields.Str(required=True)
+    phone_number = fields.Str(required=True)
+    email = fields.Email(required=True)
 
 class UserRegistrationSchema(Schema):
-    username = fields.Str(required = True)
-    email = fields.Email(required = True)
-    password = fields.Str(required = True)
-    
+    first_name = fields.Str(required=True)
+    last_name = fields.Str(required=True)
+    phone_number = fields.Str(required=True)
+    email = fields.Email(required=True)
+
 class UserLoginSchema(Schema):
-    username = fields.Str(required = True)
-    password = fields.Str(required = True, load_only = True)
-    
+    email = fields.Email(required=True)
+    phone_number = fields.Str(required=True)
