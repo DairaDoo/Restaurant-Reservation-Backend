@@ -1,1 +1,73 @@
+# Entornos virtuales
+venv/
 .env
+
+# Archivos de configuración de entorno
+*.env
+
+# Archivos de caché
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Configuración del editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Archivos de la base de datos
+*.sqlite3
+*.db
+
+# Archivos de migración de la base de datos
+migrations/
+
+# Archivos generados por Flask
+instance/
+
+# Archivos de paquetes y dependencias
+*.egg-info/
+.eggs/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Directorios de distribución
+dist/
+build/
+*.egg
+*.wheel
+
+# Archivos de cobertura de pruebas
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+# Archivos temporales y de copia de seguridad
+*.bak
+*.swp
+*.swo
+*.tmp
+
+# Archivos y directorios específicos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos específicos de IDEs
+*.iml
+*.ipr
+*.iws
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de configuración de npm
+node_modules/
+npm-debug.log
+yarn-error.log
