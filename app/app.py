@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
 from app.models import Reservation, Table
-from flask_cors import CORS  # Importa Flask-CORS
-from flask_mail import Mail, Message  # Import Flask-Mail
+from flask_cors import CORS
+from flask_mail import Mail
 
 load_dotenv()
 
@@ -58,8 +58,8 @@ def create_app(db_url=None):
     db.init_app(app)
     migrate = Migrate(app, db)
     jwt = JWTManager(app)
-    mail = Mail(app)  # Inicializa Flask-Mail
-    CORS(app)  # Configura CORS
+    mail = Mail(app)
+    CORS(app)
 
     api = Api(app)
     api.register_blueprint(UserBlueprint)
@@ -72,7 +72,3 @@ def create_app(db_url=None):
         scheduler.start()
     
     return app
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run(debug=True)
