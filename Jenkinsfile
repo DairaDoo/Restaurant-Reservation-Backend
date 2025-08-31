@@ -23,9 +23,10 @@ pipeline {
                         }
 
                         bat """
-                        ${env.VENV_DIR}\\Scripts\\pip install --upgrade pip && \
-                        ${env.VENV_DIR}\\Scripts\\pip install -r requirements.txt
+                        ${env.VENV_DIR}\\Scripts\\python.exe -m pip install --upgrade pip
+                        ${env.VENV_DIR}\\Scripts\\python.exe -m pip install -r requirements.txt
                         """
+
                     } catch (err) {
                         error "Error al configurar virtualenv o instalar dependencias: ${err}"
                     }
