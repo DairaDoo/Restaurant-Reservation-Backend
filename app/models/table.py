@@ -1,5 +1,6 @@
 from app.utils.db import db
 
+
 class Table(db.Model):
     __tablename__ = "tables"
 

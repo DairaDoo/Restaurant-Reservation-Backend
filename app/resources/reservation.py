@@ -10,17 +10,23 @@ from app.schemas.user import UserRegistrationSchema
 from app.utils import db
 from flask_mail import Mail, Message
 
-blp = Blueprint('Reservations', 'reservations', description="Operations on reservations")
+blp = Blueprint(
+    "Reservations", "reservations", description="Operations on reservations"
+)
 
-@blp.route('/tables/available/<int:people_quantity>')
+
+@blp.route("/tables/available/<int:people_quantity>")
 class GetAvailableTables(MethodView):
     @blp.response(200, TableSchema(many=True))
     def get(self, people_quantity):
         """Get available tables based on people quantity"""
-        tables = Table.query.filter(Table.table_capacity >= people_quantity, Table.is_reserved == False).all()
+        tables = Table.query.filter(
+            Table.table_capacity >= people_quantity, Table.is_reserved == False
+        ).all()
         return tables
 
-@blp.route('/reservations')
+
+@blp.route("/reservations")
 class CreateReservation(MethodView):
     @blp.arguments(ReservationCreationSchema)
     @blp.response(201, ReservationSchema)
@@ -29,41 +35,47 @@ class CreateReservation(MethodView):
         existing_reservation = Reservation.query.filter_by(
             table_id=reservation_data["table_id"],
             date=reservation_data["date"],
-            time=reservation_data["time"]
+            time=reservation_data["time"],
         ).first()
-        
+
         if existing_reservation:
-            abort(400, message="A reservation already exists for this table at the given date and time.")
-        
+            abort(
+                400,
+                message="A reservation already exists for this table at the given date and time.",
+            )
+
         table = Table.query.filter(
             Table.id == reservation_data["table_id"],
-            Table.table_capacity == reservation_data["people_quantity"]
+            Table.table_capacity == reservation_data["people_quantity"],
         ).first()
         if not table:
-            abort(404, message="No available table found for the given number of people.")
-        
+            abort(
+                404, message="No available table found for the given number of people."
+            )
+
         reservation = Reservation(
             table_id=table.id,
             date=reservation_data["date"],
             time=reservation_data["time"],
             people_quantity=reservation_data["people_quantity"],
-            is_confirmed=False  # Marking as provisional
+            is_confirmed=False,  # Marking as provisional
         )
-        
+
         table.is_reserved = True  # Mark table as reserved
         db.session.add(reservation)
         db.session.add(table)
         db.session.commit()
-        
+
         return reservation, 201
-    
+
     @blp.response(200, ReservationSchema(many=True))
     def get(self):
         """Get all reservations"""
         reservations = Reservation.query.all()
         return reservations
 
-@blp.route('/reservations/<int:reservation_id>/confirm')
+
+@blp.route("/reservations/<int:reservation_id>/confirm")
 class ConfirmReservation(MethodView):
     @blp.arguments(UserRegistrationSchema)
     @blp.response(200, ReservationSchema)
@@ -72,7 +84,7 @@ class ConfirmReservation(MethodView):
         reservation = Reservation.query.get_or_404(reservation_id)
         if reservation.is_confirmed:
             abort(400, message="Reservation already confirmed.")
-        
+
         # Verifica si el usuario ya existe por correo electrónico
         existing_user = User.query.filter_by(email=user_data["email"]).first()
         if existing_user:
@@ -86,20 +98,20 @@ class ConfirmReservation(MethodView):
                 first_name=user_data["first_name"],
                 last_name=user_data["last_name"],
                 phone_number=user_data["phone_number"],
-                email=user_data["email"]
+                email=user_data["email"],
             )
             db.session.add(user)
             db.session.commit()
-        
+
         # Asociar la reserva con el usuario y confirmar la reserva
         reservation.user_id = user.id
         reservation.is_confirmed = True
         db.session.add(reservation)
         db.session.commit()
-        
+
         # Envía el correo electrónico de confirmación aquí, asegurándote de usar la información correcta del usuario
         self.send_confirmation_email(user, reservation)
-        
+
         return reservation
 
     def send_confirmation_email(self, user, reservation):
@@ -107,7 +119,9 @@ class ConfirmReservation(MethodView):
         time_24hr = datetime.strptime(reservation.time.strftime("%H:%M:%S"), "%H:%M:%S")
         time_12hr = time_24hr.strftime("%I:%M %p")
 
-        email_subject = f"Reservation Confirmation for {user.first_name} {user.last_name}"
+        email_subject = (
+            f"Reservation Confirmation for {user.first_name} {user.last_name}"
+        )
         email_body = f"""
         Dear {user.first_name} {user.last_name},
 
@@ -127,17 +141,18 @@ class ConfirmReservation(MethodView):
         mail = Mail(app)
         mail.send(msg)
 
-@blp.route('/reservations/<int:reservation_id>')
+
+@blp.route("/reservations/<int:reservation_id>")
 class DeleteReservation(MethodView):
     @blp.response(200, ReservationSchema)
     def delete(self, reservation_id):
         """Delete a reservation and update table reservation status"""
         reservation = Reservation.query.get_or_404(reservation_id)
         table = Table.query.get_or_404(reservation.table_id)
-        
+
         db.session.delete(reservation)
         table.is_reserved = False
         db.session.add(table)
         db.session.commit()
-        
+
         return {"message": "Reservation deleted successfully."}, 200

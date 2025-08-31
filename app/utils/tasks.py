@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from app.models import Reservation, Table
 from app.utils.db import db
 
+
 def free_reserved_tables(app):
     """
     Libera las mesas reservadas que tengan más de 3 horas desde la reserva confirmada.
@@ -15,7 +16,7 @@ def free_reserved_tables(app):
         reservations = Reservation.query.filter(
             Reservation.date <= three_hours_ago.date(),
             Reservation.time <= three_hours_ago.time(),
-            Reservation.is_confirmed == True
+            Reservation.is_confirmed == True,
         ).all()
 
         # Liberar mesas asociadas a esas reservas

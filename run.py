@@ -6,6 +6,8 @@ app = create_app()
 
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=lambda: free_reserved_tables(app), trigger="interval", minutes=1)
+    scheduler.add_job(
+        func=lambda: free_reserved_tables(app), trigger="interval", minutes=1
+    )
     scheduler.start()
     app.run(debug=True)
