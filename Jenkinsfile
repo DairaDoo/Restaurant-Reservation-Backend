@@ -24,7 +24,7 @@ pipeline {
 
                         bat """
                         ${env.VENV_DIR}\\Scripts\\python.exe -m pip install --upgrade pip
-                        ${env.VENV_DIR}\\Scripts\\python.exe -m pip install -r requirements.txt
+                        ${env.VENV_DIR}\\Scripts\\python.exe -m pip install -r requirements2.txt
                         """
 
                     } catch (err) {
