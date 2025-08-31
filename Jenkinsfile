@@ -17,19 +17,14 @@ pipeline {
         stage('Setup Virtualenv & Install Dependencies') {
             steps {
                 script {
-                    try {
-                        if (!fileExists("${env.VENV_DIR}\\Scripts\\activate")) {
-                            bat "python -m venv ${env.VENV_DIR}"
-                        }
-
-                        bat """
-                        ${env.VENV_DIR}\\Scripts\\python.exe -m pip install --upgrade pip
-                        ${env.VENV_DIR}\\Scripts\\python.exe -m pip install -r requirements2.txt
-                        """
-
-                    } catch (err) {
-                        error "Error al configurar virtualenv o instalar dependencias: ${err}"
+                    if (!fileExists("${env.VENV_DIR}\\Scripts\\activate")) {
+                        bat "python -m venv ${env.VENV_DIR}"
                     }
+
+                    bat """
+                    ${env.VENV_DIR}\\Scripts\\python.exe -m pip install --upgrade pip
+                    ${env.VENV_DIR}\\Scripts\\python.exe -m pip install -r requirements.txt
+                    """
                 }
             }
         }
@@ -37,10 +32,12 @@ pipeline {
         stage('Format with Black') {
             steps {
                 script {
-                    try {
-                        bat "${env.VENV_DIR}\\Scripts\\python -m black . --check"
-                    } catch (err) {
-                        echo "Advertencia: Black detectó problemas de formato."
+                    // Ejecuta Black y captura el código de salida
+                    def status = bat(script: "${env.VENV_DIR}\\Scripts\\python -m black . --check", returnStatus: true)
+
+                    if (status != 0) {
+                        // Falla el build si Black detecta problemas
+                        error("Black detectó problemas de formato. Por favor ejecuta 'black .' para formatear el código antes de hacer commit.")
                     }
                 }
             }
