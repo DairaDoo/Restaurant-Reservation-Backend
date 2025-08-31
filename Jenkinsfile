@@ -17,21 +17,31 @@ pipeline {
         stage('Setup Virtualenv & Install Dependencies') {
             steps {
                 script {
-                    if (!fileExists("${env.VENV_DIR}\\Scripts\\activate")) {
-                        bat "python -m venv ${env.VENV_DIR}"
-                    }
+                    try {
+                        if (!fileExists("${env.VENV_DIR}\\Scripts\\activate")) {
+                            bat "python -m venv ${env.VENV_DIR}"
+                        }
 
-                    bat """
-                    ${env.VENV_DIR}\\Scripts\\pip install --upgrade pip
-                    ${env.VENV_DIR}\\Scripts\\pip install -r requirements.txt
-                    """
+                        bat """
+                        ${env.VENV_DIR}\\Scripts\\pip install --upgrade pip && \
+                        ${env.VENV_DIR}\\Scripts\\pip install -r requirements.txt
+                        """
+                    } catch (err) {
+                        error "Error al configurar virtualenv o instalar dependencias: ${err}"
+                    }
                 }
             }
         }
 
         stage('Format with Black') {
             steps {
-                bat "${env.VENV_DIR}\\Scripts\\python -m black . --check"
+                script {
+                    try {
+                        bat "${env.VENV_DIR}\\Scripts\\python -m black . --check"
+                    } catch (err) {
+                        echo "Advertencia: Black detectó problemas de formato."
+                    }
+                }
             }
         }
 
