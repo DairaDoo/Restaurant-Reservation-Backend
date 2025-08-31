@@ -1,40 +1,49 @@
 pipeline {
-    agent any
+    // Usamos un agente Docker con Python 3.9
+    agent {
+        docker {
+            image 'python:3.9-slim'
+            args '-u'  // para output en tiempo real
+        }
+    }
 
     environment {
         VENV_DIR = "${WORKSPACE}/venv"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
+                echo 'Obteniendo código desde GitHub...'
                 git branch: 'main',
                     url: 'https://github.com/DairaDoo/Restaurant-Reservation-Backend.git',
                     credentialsId: 'DairaDoo'
             }
         }
 
-        stage('Setup Virtualenv & Install Dependencies') {
+        stage('Setup Virtual Environment & Install Dependencies') {
             steps {
                 script {
-                    // Crear virtualenv si no existe
-                    if (!fileExists("${env.VENV_DIR}/Scripts/activate")) {
-                        bat "python -m venv ${env.VENV_DIR}"
-                    }
-                    // Instalar dependencias
-                    bat """
-                    ${env.VENV_DIR}\\Scripts\\pip install --upgrade pip
-                    ${env.VENV_DIR}\\Scripts\\pip install -r requirements.txt
+                    echo 'Instalando dependencias...'
+                    // Creamos el virtualenv
+                    sh """
+                    python -m venv ${VENV_DIR}
+                    source ${VENV_DIR}/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
                     """
                 }
             }
         }
 
-        stage('Format with Black') {
+        stage('Code Formatting with Black') {
             steps {
                 script {
-                    // Formatear todo el proyecto
-                    bat "${env.VENV_DIR}\\Scripts\\python -m black . --check"
+                    echo 'Revisando formato con Black...'
+                    sh """
+                    source ${VENV_DIR}/bin/activate
+                    python -m black . --check
+                    """
                 }
             }
         }
@@ -42,8 +51,9 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Solo si tienes tests configurados
-                    // bat "${env.VENV_DIR}\\Scripts\\pytest tests/"
+                    echo 'Ejecutando tests (si existen)...'
+                    // Aquí podrías usar pytest si tienes tests
+                    // sh "source ${VENV_DIR}/bin/activate && pytest tests/"
                     echo "No hay tests definidos aún"
                 }
             }
@@ -52,10 +62,10 @@ pipeline {
 
     post {
         success {
-            echo 'Build y formateo completados correctamente.'
+            echo 'Pipeline completado correctamente: Código formateado y dependencias instaladas.'
         }
         failure {
-            echo 'Error en el pipeline. Revisar la consola para detalles.'
+            echo 'Pipeline falló. Revisar la salida de consola para más detalles.'
         }
     }
 }
