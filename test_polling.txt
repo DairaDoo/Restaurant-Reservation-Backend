@@ -1,1 +1,0 @@
-probando un poll con jenkins de forma simple
