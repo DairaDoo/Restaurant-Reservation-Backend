@@ -1,8 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from sqlalchemy.exc import IntegrityError
-from datetime import datetime, timedelta
-from flask import request, current_app as app
+from datetime import datetime
+from flask import current_app as app
 from app.models import Reservation, Table, User
 from app.schemas.reservation import ReservationSchema, ReservationCreationSchema
 from app.schemas.table import TableSchema
@@ -81,7 +80,10 @@ class ConfirmReservation(MethodView):
     @blp.response(200, ReservationSchema)
     def put(self, user_data, reservation_id):
         """Confirms a provisional reservation with user data"""
-        reservation = Reservation.query.get_or_404(reservation_id)
+        reservation = db.session.get(Reservation, reservation_id)
+        if not reservation:
+            abort(404, message="Reservation not found.")
+
         if reservation.is_confirmed:
             abort(400, message="Reservation already confirmed.")
 
@@ -109,7 +111,7 @@ class ConfirmReservation(MethodView):
         db.session.add(reservation)
         db.session.commit()
 
-        # Envía el correo electrónico de confirmación aquí, asegurándote de usar la información correcta del usuario
+        # Envía el correo electrónico de confirmación aquí
         self.send_confirmation_email(user, reservation)
 
         return reservation
@@ -126,7 +128,7 @@ class ConfirmReservation(MethodView):
         Dear {user.first_name} {user.last_name},
 
         Your reservation for {reservation.date} at {time_12hr} has been confirmed.
-        
+
         Reservation details:
         - Table ID: {reservation.table_id}
         - Number of People: {reservation.people_quantity}
@@ -147,8 +149,13 @@ class DeleteReservation(MethodView):
     @blp.response(200, ReservationSchema)
     def delete(self, reservation_id):
         """Delete a reservation and update table reservation status"""
-        reservation = Reservation.query.get_or_404(reservation_id)
-        table = Table.query.get_or_404(reservation.table_id)
+        reservation = db.session.get(Reservation, reservation_id)
+        if not reservation:
+            abort(404, message="Reservation not found.")
+
+        table = db.session.get(Table, reservation.table_id)
+        if not table:
+            abort(404, message="Table not found.")
 
         db.session.delete(reservation)
         table.is_reserved = False

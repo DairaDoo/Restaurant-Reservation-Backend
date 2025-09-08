@@ -1,13 +1,14 @@
 from app.models.user import User
 from app.utils.db import db
 
+
 def test_create_user(client, app):
     """Prueba la creación de un usuario válido."""
     new_user = {
         "first_name": "Dairan",
         "last_name": "Mora",
         "phone_number": "123456789",
-        "email": "test@example.com"
+        "email": "test@example.com",
     }
     response = client.post("/users", json=new_user)
     assert response.status_code == 201
@@ -24,7 +25,7 @@ def test_create_duplicate_user(client):
         "first_name": "Ana",
         "last_name": "Lopez",
         "phone_number": "111111111",
-        "email": "dup@example.com"
+        "email": "dup@example.com",
     }
     client.post("/users", json=user_data)
     response = client.post("/users", json=user_data)

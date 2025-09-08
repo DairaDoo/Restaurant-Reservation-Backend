@@ -33,13 +33,13 @@ class GetTableDetails(MethodView):
     @blp.response(200, TableSchema)
     def get(self, table_id):
         """Get a specific table details."""
-        table = Table.query.get_or_404(table_id)
+        table = Table.session.get_or_404(table_id)
         return table
 
     @blp.response(200)
     def delete(self, table_id):
         """Delete a specific table."""
-        table = Table.query.get_or_404(table_id)
+        table = Table.session.get_or_404(table_id)
         db.session.delete(table)
         db.session.commit()
 
@@ -49,7 +49,7 @@ class GetTableDetails(MethodView):
     @blp.response(200, TableSchema)
     def put(self, table_data, table_id):
         """Update specific table."""
-        table = Table.query.get_or_404(table_id)
+        table = Table.session.get_or_404(table_id)
         table.table_capacity = table_data["table_capacity"]
 
         db.session.add(table)
