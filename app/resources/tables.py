@@ -19,13 +19,10 @@ class GetOrCreateTable(MethodView):
     @blp.response(201, TableSchema)
     def post(self, table_data):
         """Creates a new table"""
-        # Se omite la validación del table_number, ya que se generará automáticamente
         table = Table(table_capacity=table_data["table_capacity"])
-
         db.session.add(table)
         db.session.commit()
-
-        return TableSchema().dump(table), 201
+        return table, 201
 
 
 @blp.route("/tables/<int:table_id>")
@@ -33,26 +30,30 @@ class GetTableDetails(MethodView):
     @blp.response(200, TableSchema)
     def get(self, table_id):
         """Get a specific table details."""
-        table = Table.session.get_or_404(table_id)
+        table = db.session.get(Table, table_id)
+        if not table:
+            abort(404, message="Table not found")
         return table
 
     @blp.response(200)
     def delete(self, table_id):
         """Delete a specific table."""
-        table = Table.session.get_or_404(table_id)
+        table = db.session.get(Table, table_id)
+        if not table:
+            abort(404, message="Table not found")
+
         db.session.delete(table)
         db.session.commit()
-
         return {"message": "Table deleted successfully."}, 200
 
     @blp.arguments(TableSchema)
     @blp.response(200, TableSchema)
     def put(self, table_data, table_id):
         """Update specific table."""
-        table = Table.session.get_or_404(table_id)
+        table = db.session.get(Table, table_id)
+        if not table:
+            abort(404, message="Table not found")
+
         table.table_capacity = table_data["table_capacity"]
-
-        db.session.add(table)
         db.session.commit()
-
-        return TableSchema().dump(table), 200
+        return table, 200
