@@ -13,15 +13,11 @@ def free_reserved_tables(app):
         three_hours_ago = now - timedelta(hours=3)
 
         # Obtener reservas confirmadas con fecha y hora menor o igual a tres horas atrás
-        reservations = (
-            Reservation.query
-            .filter(
-                Reservation.is_confirmed.is_(True),
-                Reservation.date <= three_hours_ago.date(),
-                Reservation.time <= three_hours_ago.time()
-            )
-            .all()
-        )
+        reservations = Reservation.query.filter(
+            Reservation.is_confirmed.is_(True),
+            Reservation.date <= three_hours_ago.date(),
+            Reservation.time <= three_hours_ago.time(),
+        ).all()
 
         # Liberar mesas asociadas
         for reservation in reservations:
