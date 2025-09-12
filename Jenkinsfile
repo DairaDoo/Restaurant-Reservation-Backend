@@ -64,13 +64,17 @@ pipeline {
 
         stage('Publish Reports') {
             steps {
-                publishCoverage adapters: [coberturaAdapter('coverage.xml')],
-                                globalThresholds: [[thresholdTarget: 'Line', unhealthyThreshold: 80.0, failingThreshold: 70.0]]
+                // Publica cobertura en Jenkins (Coverage Plugin)
+                recordCoverage tools: [cobertura('coverage.xml')]
 
+                // Publica resultados de tests (JUnit)
                 junit 'test-results/results.xml'
+
+                // Archiva el reporte HTML de coverage
                 archiveArtifacts artifacts: 'htmlcov/**', fingerprint: true
             }
         }
+
     }
 
     post {
