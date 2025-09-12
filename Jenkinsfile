@@ -6,6 +6,12 @@ pipeline {
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -32,30 +38,47 @@ pipeline {
         stage('Format with Black') {
             steps {
                 script {
-                    // Ejecuta Black y captura el código de salida
                     def status = bat(script: "${env.VENV_DIR}\\Scripts\\python -m black . --check", returnStatus: true)
 
                     if (status != 0) {
-                        // Falla el build si Black detecta problemas
                         error("Black detectó problemas de formato. Por favor ejecuta 'black .' para formatear el código antes de hacer commit.")
                     }
                 }
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Tests with Coverage') {
             steps {
-                echo "No hay tests definidos aún"
+                script {
+                    bat """
+                    ${env.VENV_DIR}\\Scripts\\python.exe -m pytest ^
+                        --cov=app ^
+                        --cov-report=xml ^
+                        --cov-report=html ^
+                        --cov-report=term-missing ^
+                        --junitxml=test-results\\results.xml
+                    """
+                }
+            }
+        }
+
+        stage('Publish Reports') {
+            steps {
+                publishCoverage adapters: [coberturaAdapter('coverage.xml')],
+                                globalThresholds: [[thresholdTarget: 'Line', unhealthyThreshold: 80.0, failingThreshold: 70.0]]
+
+                junit 'test-results/results.xml'
+                archiveArtifacts artifacts: 'htmlcov/**', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            echo 'Build y formateo completados correctamente.'
+            echo '✅ Build, formato y tests completados correctamente.'
         }
         failure {
-            echo 'Pipeline falló. Revisar la salida de consola.'
+            echo '❌ Pipeline falló. Revisar la salida de consola.'
         }
     }
 }
