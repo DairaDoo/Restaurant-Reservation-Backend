@@ -50,6 +50,9 @@ pipeline {
         stage('Run Tests with Coverage') {
             steps {
                 script {
+                    // Create test-results directory if it doesn't exist
+                    bat "if not exist test-results mkdir test-results"
+
                     bat """
                     ${env.VENV_DIR}\\Scripts\\python.exe -m pytest ^
                         --cov=app ^
@@ -65,7 +68,9 @@ pipeline {
         stage('Publish Reports') {
             steps {
                 // Publica cobertura en Jenkins (Coverage Plugin)
-                coverage reportFile: 'coverage.xml'
+                publishCoverage adapters: [
+                    coberturaAdapter('coverage.xml')
+                ], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
 
                 // Publica resultados de tests (JUnit)
                 junit 'test-results/results.xml'
