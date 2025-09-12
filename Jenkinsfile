@@ -65,7 +65,7 @@ pipeline {
         stage('Publish Reports') {
             steps {
                 // Publica cobertura en Jenkins (Coverage Plugin)
-                cobertura coberturaReportFile: 'coverage.xml'
+                coverage xmlReportFile: 'coverage.xml'
 
                 // Publica resultados de tests (JUnit)
                 junit 'test-results/results.xml'
