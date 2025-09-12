@@ -68,9 +68,7 @@ pipeline {
         stage('Publish Reports') {
             steps {
                 // Publica cobertura en Jenkins (Coverage Plugin)
-                publishCoverage adapters: [
-                    coberturaAdapter('coverage.xml')
-                ], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+                recordCoverage tools: [[parser: 'COBERTURA', pattern: 'coverage.xml']]
 
                 // Publica resultados de tests (JUnit)
                 junit 'test-results/results.xml'
