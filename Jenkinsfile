@@ -65,7 +65,7 @@ pipeline {
         stage('Publish Reports') {
             steps {
                 // Publica cobertura en Jenkins (Coverage Plugin)
-                recordCoverage tools: [cobertura('coverage.xml')]
+                recordCoverage tools: [[$class: 'CoberturaReportAdapter', path: 'coverage.xml']]
 
                 // Publica resultados de tests (JUnit)
                 junit 'test-results/results.xml'
@@ -74,6 +74,7 @@ pipeline {
                 archiveArtifacts artifacts: 'htmlcov/**', fingerprint: true
             }
         }
+
 
     }
 
